@@ -1,7 +1,20 @@
-1) DECLARING MUTEX INSIDE THE METHOD WILL CREATE INDEPENDENT MUTEX, OBJECT WILL NOT BE LOCKED CORRECTLY IF IT USED BY SEVERAL GOROUTINES
-2) DEADLOCK CAN HAPPEN. BOTH GOROUTINES WAIT FOR EACH OTHER'S LOCK FOREVER.
-FIX: NEED TO GET LOCKS IN A DETERMINISTIC ORDER, SORTED BY SOME FIELD. BOTH GOROUTINES THEN CONTEND FOR PRODUCT A FIRST, 1 WINS AND PROCEEDS, THE OTHER WAITS.
-3) THERE IS NO CHECK FOR NIL POINTER AND FOR EXISTING KEY
-4) -race DOESN'T GUARANTEE RACE-FREE CODE.
-IF TEST CALLS CODE SEQUENTIALLY, DETECTOR WILL NOT SEE CONCURRENT ACCESS.
-IF WE USE LOW NUMBER OF GOROUTINES, SO THERE IS POSSIBILITY THAT DATA RACE WILL NOT BE DETECTED.
+**Q1:** In your implementation, what happens if `source.Withdraw()` succeeds but `dest.Deposit()` fails? Show the exact state of both accounts and the returned plan.
+
+**Q2:** The buggy code applies mutations one at a time. Why is this a problem? Give a specific failure scenario.
+
+**Q3:** Your `UpdateMut` should only include dirty fields. If an account has `balance` changed but `status` unchanged, the mutation should NOT include `status`. Why does this matter for concurrent updates?
+
+**Q4:** Look at this alternative approach:
+
+```go
+func (r *AccountRepo) UpdateMut(account *Account) *Mutation {
+    return &Mutation{
+        Updates: map[string]interface{}{
+            "balance": account.Balance(),
+            "status":  account.Status(),  // Always include all fields
+        },
+    }
+}
+```
+
+What problem does this cause that the dirty-field approach avoids?
