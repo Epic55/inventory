@@ -1,6 +1,9 @@
 func (uc *Interactor) Execute(ctx context.Context, req *TransferRequest) error {
-    source, _ := uc.repo.Retrieve(ctx, req.FromAccountID) ## 1) IT IS BETTER TO DECLARE ERROR AND HANDLE IT CORRECTLY TO PROVIDE CORRECT WORK OF THE METHOD
-    dest, _ := uc.repo.Retrieve(ctx, req.ToAccountID) ## 2) IT IS BETTER TO DECLARE ERROR AND HANDLE IT CORRECTLY TO PROVIDE CORRECT WORK OF THE METHOD
+## 1) need to validate 'req' before doing operations below on it
+## 2) it is better to declare error and handle it correctly to provide error handling in lines 5 and 6
+## 3) 'uc' variable has 'accounts' field, not 'repo', correct use - uc.accounts.Retrieve in lines 5 and 6
+    source, _ := uc.repo.Retrieve(ctx, req.FromAccountID) 
+    dest, _ := uc.repo.Retrieve(ctx, req.ToAccountID) 
 
     source.balance -= req.Amount
     dest.balance += req.Amount
@@ -20,7 +23,8 @@ func (uc *Interactor) Execute(ctx context.Context, req *TransferRequest) error {
     if err := uc.db.Apply(mutation1); err != nil {
         return err
     }
-    if err := uc.db.Apply(mutation2); err != nil { ## 3) NO NEED TO DECLARE err AGAIN, JUST err = ...
+## 4) NO NEED TO DECLARE err AGAIN, JUST err = ...
+    if err := uc.db.Apply(mutation2); err != nil { 
         return err
     }
 
